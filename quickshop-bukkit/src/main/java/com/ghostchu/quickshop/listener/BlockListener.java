@@ -154,11 +154,10 @@ public class BlockListener extends AbstractProtectionListener {
       return;
     }
 
-    if(event.getInitiator().getHolder() instanceof final Player player) {
-      if(!QuickShop.inShop.contains(player.getUniqueId())) {
-        return;
-      }
-    }
+    boolean related = event.getInitiator().getViewers().stream().anyMatch(humanEntity -> {
+      return QuickShop.inShop.contains(humanEntity.getUniqueId());
+    });
+    if (related) return;
 
     Location destination = event.getDestination().getLocation();
     Location source = event.getSource().getLocation();
