@@ -6,6 +6,7 @@ import com.ghostchu.quickshop.api.inventory.InventoryWrapper;
 import com.ghostchu.quickshop.api.operation.Operation;
 import com.ghostchu.quickshop.api.shop.InventoryTransaction;
 import com.ghostchu.quickshop.shop.operation.AddItemOperation;
+import com.ghostchu.quickshop.shop.operation.AddItemsOperation;
 import com.ghostchu.quickshop.shop.operation.RemoveItemOperation;
 import com.ghostchu.quickshop.util.Util;
 import com.ghostchu.quickshop.util.logger.Log;
@@ -108,15 +109,27 @@ public class SimpleInventoryTransaction implements InventoryTransaction {
       this.lastError = "Plugin cancelled this transaction.";
       return false;
     }
-    if(from != null && !this.executeOperation(new RemoveItemOperation(item, amount, from))) {
-      this.lastError = "Failed to remove " + amount + "x " + Util.serialize(item) + " from " + from;
-      callback.onFailed(this);
-      return false;
+    RemoveItemOperation operation = null;
+    if(from != null) {
+      operation = new RemoveItemOperation(item, amount, from);
+      if (!this.executeOperation(operation)) {
+        this.lastError = "Failed to remove " + amount + "x " + Util.serialize(item) + " from " + from;
+        callback.onFailed(this);
+        return false;
+      }
     }
-    if(to != null && !this.executeOperation(new AddItemOperation(item, amount, to))) {
-      this.lastError = "Failed to add " + amount + "x " + Util.serialize(item) + " to " + to;
-      callback.onFailed(this);
-      return false;
+    if (operation != null) {
+      if(to != null && !this.executeOperation(new AddItemsOperation(operation.getRemovedItems(), to))) {
+        this.lastError = "Failed to add " + amount + "x " + Util.serialize(item) + " to " + to;
+        callback.onFailed(this);
+        return false;
+      }
+    } else {
+      if(to != null && !this.executeOperation(new AddItemOperation(item, amount, to))) {
+        this.lastError = "Failed to add " + amount + "x " + Util.serialize(item) + " to " + to;
+        callback.onFailed(this);
+        return false;
+      }
     }
     callback.onSuccess(this);
     return true;

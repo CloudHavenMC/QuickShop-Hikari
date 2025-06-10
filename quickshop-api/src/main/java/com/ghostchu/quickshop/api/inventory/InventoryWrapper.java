@@ -13,6 +13,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -142,6 +144,18 @@ public interface InventoryWrapper extends Iterable<ItemStack> {
    */
   @NotNull
   default Map<Integer, ItemStack> removeItem(final ItemStack... itemStacks) {
+    return removeItem(null, itemStacks);
+  }
+
+  /**
+   * Remove specific items from inventory
+   *
+   * @param itemStacks items to remove
+   *
+   * @return The map of containing item index and itemStack itself which is not fit
+   */
+  @NotNull
+  default Map<Integer, ItemStack> removeItem(@Nullable BiConsumer<ItemStack, Integer> removedItemConsumer, final ItemStack... itemStacks) {
 
     if(itemStacks.length == 0) {
       return Collections.emptyMap();
@@ -157,6 +171,9 @@ public interface InventoryWrapper extends Iterable<ItemStack> {
         if(itemStack != null && QuickShopAPI.getInstance().getItemMatcher().matches(itemStackToRemove, itemStack)) {
           final int couldRemove = itemStack.getAmount();
           final int actuallyRemove = Math.min(itemStackToRemove.getAmount(), couldRemove);
+          if (removedItemConsumer != null) {
+            removedItemConsumer.accept(itemStack, actuallyRemove);
+          }
           itemStack.setAmount(itemStack.getAmount() - actuallyRemove);
           final int needsNow = itemStackToRemove.getAmount() - actuallyRemove;
           itemStackToRemove.setAmount(needsNow);
