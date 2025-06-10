@@ -8,6 +8,9 @@ import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collections;
+import java.util.List;
+
 /**
  * A simple impl for ItemMatcher
  *
@@ -16,10 +19,12 @@ import org.jetbrains.annotations.Nullable;
 public class BukkitItemMatcherImpl implements ItemMatcher {
 
   private final QuickShop plugin;
+  private final List<String> ignoredCustomTags;
 
   public BukkitItemMatcherImpl(final QuickShop plugin) {
 
     this.plugin = plugin;
+    this.ignoredCustomTags = plugin.getConfig().isList("matcher.ignored-custom-tags") ? plugin.getConfig().getStringList("matcher.ignored-custom-tags") : Collections.emptyList();
   }
 
   /**
@@ -77,6 +82,11 @@ public class BukkitItemMatcherImpl implements ItemMatcher {
         return true;
       }
     }
+
+    // Strip custom data from both items.
+    plugin.getPlatform().stripCustomTags(original, ignoredCustomTags);
+    plugin.getPlatform().stripCustomTags(tester, ignoredCustomTags);
+
     return tester.isSimilar(original);
   }
 }

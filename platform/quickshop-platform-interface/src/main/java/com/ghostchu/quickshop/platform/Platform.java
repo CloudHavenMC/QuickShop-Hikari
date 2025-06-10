@@ -1,6 +1,7 @@
 package com.ghostchu.quickshop.platform;
 
 import com.vdurmont.semver4j.Semver;
+import de.tr7zw.nbtapi.NBT;
 import de.tr7zw.nbtapi.NBTItem;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -68,6 +69,16 @@ public interface Platform {
       return null;
     }
     return shopId;
+  }
+
+  default void stripCustomTags(@NotNull final ItemStack stack, List<String> customTags) {
+    if(!Bukkit.getPluginManager().isPluginEnabled("NBTAPI")) {
+      return;
+    }
+
+    NBT.modify(stack, (nbt) -> {
+      customTags.forEach(nbt::removeKey);
+    });
   }
 
   @NotNull
