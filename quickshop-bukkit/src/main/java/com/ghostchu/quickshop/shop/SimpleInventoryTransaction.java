@@ -45,41 +45,6 @@ public class SimpleInventoryTransaction implements InventoryTransaction {
     new InventoryTransactionEvent(this).callEvent();
   }
 
-  public interface SimpleTransactionCallback extends InventoryTransaction.TransactionCallback {
-
-    /**
-     * Calling while Transaction commit
-     *
-     * @param transaction Transaction
-     *
-     * @return Does commit event has been cancelled
-     */
-    default boolean onCommit(@NotNull final SimpleInventoryTransaction transaction) {
-
-      return true;
-    }
-
-    /**
-     * Calling while Transaction commit failed Use InventoryTransaction#getLastError() to getting
-     * reason Use InventoryTransaction#getSteps() to getting the fail step
-     *
-     * @param transaction Transaction
-     */
-    default void onFailed(@NotNull final SimpleInventoryTransaction transaction) {
-
-    }
-
-    /**
-     * Calling while Transaction commit successfully
-     *
-     * @param transaction Transaction
-     */
-    default void onSuccess(@NotNull final SimpleInventoryTransaction transaction) {
-
-    }
-
-  }
-
   /**
    * Commit the transaction
    *
@@ -133,13 +98,6 @@ public class SimpleInventoryTransaction implements InventoryTransaction {
     }
     callback.onSuccess(this);
     return true;
-  }
-
-
-  @Override
-  public void setFrom(@Nullable final InventoryWrapper from) {
-
-    this.from = from;
   }
 
   @Override
@@ -224,6 +182,12 @@ public class SimpleInventoryTransaction implements InventoryTransaction {
     return from;
   }
 
+  @Override
+  public void setFrom(@Nullable final InventoryWrapper from) {
+
+    this.from = from;
+  }
+
   /**
    * Rolling back the transaction
    *
@@ -279,6 +243,41 @@ public class SimpleInventoryTransaction implements InventoryTransaction {
       this.lastError = "Failed to execute operation: " + operation;
       return false;
     }
+  }
+
+  public interface SimpleTransactionCallback extends InventoryTransaction.TransactionCallback {
+
+    /**
+     * Calling while Transaction commit
+     *
+     * @param transaction Transaction
+     *
+     * @return Does commit event has been cancelled
+     */
+    default boolean onCommit(@NotNull final SimpleInventoryTransaction transaction) {
+
+      return true;
+    }
+
+    /**
+     * Calling while Transaction commit failed Use InventoryTransaction#getLastError() to getting
+     * reason Use InventoryTransaction#getSteps() to getting the fail step
+     *
+     * @param transaction Transaction
+     */
+    default void onFailed(@NotNull final SimpleInventoryTransaction transaction) {
+
+    }
+
+    /**
+     * Calling while Transaction commit successfully
+     *
+     * @param transaction Transaction
+     */
+    default void onSuccess(@NotNull final SimpleInventoryTransaction transaction) {
+
+    }
+
   }
 
 }
