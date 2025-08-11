@@ -46,13 +46,13 @@ import org.jetbrains.annotations.Nullable;
 public abstract class AbstractDisplayItem implements Reloadable {
 
   protected static final QuickShop PLUGIN = QuickShop.getInstance();
+  private static final NamespacedKey DISPLAY_MARK_NAMESPACE = new NamespacedKey(QuickShop.getInstance().getJavaPlugin(), "display_protection");
+  private static boolean virtualDisplayDoesntWork = false;
   protected final ItemStack originalItemStack;
   protected final Shop shop;
   @Nullable
   protected ItemStack guardedStack;
   private boolean pendingRemoval;
-  private static boolean virtualDisplayDoesntWork = false;
-  private static final NamespacedKey DISPLAY_MARK_NAMESPACE = new NamespacedKey(QuickShop.getInstance().getJavaPlugin(), "display_protection");
 
   protected AbstractDisplayItem(final Shop shop) {
 
@@ -60,11 +60,6 @@ public abstract class AbstractDisplayItem implements Reloadable {
     this.originalItemStack = shop.getItem().clone();
     PLUGIN.getReloadManager().register(this);
     init();
-  }
-
-  public static void setVirtualDisplayDoesntWork(final boolean shouldDisable) {
-
-    virtualDisplayDoesntWork = shouldDisable;
   }
 
   /**
@@ -94,9 +89,11 @@ public abstract class AbstractDisplayItem implements Reloadable {
     if(!PLUGIN.isDisplayEnabled()) {
       return false;
     }
+
     if(getNowUsing() == DisplayType.VIRTUALITEM) {
       return false;
     }
+
     Util.ensureThread(false);
     if(itemStack == null) {
       return false;
@@ -110,17 +107,6 @@ public abstract class AbstractDisplayItem implements Reloadable {
     }
     return iMeta.getPersistentDataContainer().has(DISPLAY_MARK_NAMESPACE);
   }
-
-  protected void init() {
-
-    if(PLUGIN.getConfig().getBoolean("shop.display-allow-stacks")) {
-      //Prevent stack over the normal size
-      originalItemStack.setAmount(Math.min(originalItemStack.getAmount(), originalItemStack.getMaxStackSize()));
-    } else {
-      this.originalItemStack.setAmount(1);
-    }
-  }
-
 
   /**
    * Create a new itemStack with protect flag.
@@ -164,6 +150,26 @@ public abstract class AbstractDisplayItem implements Reloadable {
           @NotNull final ItemStack itemStack, @NotNull final Shop shop) {
 
     return new ShopProtectionFlag(shop.getLocation().toString(), Util.serialize(itemStack));
+  }
+
+  public static boolean isVirtualDisplayDoesntWork() {
+
+    return virtualDisplayDoesntWork;
+  }
+
+  public static void setVirtualDisplayDoesntWork(final boolean shouldDisable) {
+
+    virtualDisplayDoesntWork = shouldDisable;
+  }
+
+  protected void init() {
+
+    if(PLUGIN.getConfig().getBoolean("shop.display-allow-stacks")) {
+      //Prevent stack over the normal size
+      originalItemStack.setAmount(Math.min(originalItemStack.getAmount(), originalItemStack.getMaxStackSize()));
+    } else {
+      this.originalItemStack.setAmount(1);
+    }
   }
 
   /**
@@ -318,10 +324,5 @@ public abstract class AbstractDisplayItem implements Reloadable {
   public Shop getShop() {
 
     return shop;
-  }
-
-  public static boolean isVirtualDisplayDoesntWork() {
-
-    return virtualDisplayDoesntWork;
   }
 }
