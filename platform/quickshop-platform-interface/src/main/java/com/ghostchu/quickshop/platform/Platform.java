@@ -3,6 +3,8 @@ package com.ghostchu.quickshop.platform;
 import com.vdurmont.semver4j.Semver;
 import de.tr7zw.nbtapi.NBT;
 import de.tr7zw.nbtapi.NBTItem;
+import de.tr7zw.nbtapi.iface.ReadWriteNBT;
+import de.tr7zw.nbtapi.iface.ReadableNBT;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
@@ -79,7 +81,15 @@ public interface Platform {
     }
 
     NBT.modify(stack, (nbt) -> {
-      customTags.forEach(nbt::removeKey);
+      for (String str : customTags) {
+        ReadWriteNBT removeFromCompound = nbt;
+        String[] split = str.split("\\.");
+        for (int i = 0; i < split.length - 1 && removeFromCompound != null; i++) {
+          removeFromCompound = removeFromCompound.getCompound(split[i]);
+        }
+        if (removeFromCompound != null)
+          removeFromCompound.removeKey(split[split.length - 1]);
+      }
     });
   }
 
